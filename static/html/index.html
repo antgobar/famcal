@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Organise your Family Life">
     <link rel="stylesheet" href="/static/css/pico.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
     <title>FamCal</title>
 </head>
 
@@ -28,19 +29,30 @@
     </header>
 
     <main>
-        <a href="/auth/google/auth">Authenticate with Google Calendar</a>
-        <form id="addCalMemberForm">
-            <label for="name">Add member</label>
-            <input id="name" type="text" name="name" placeholder="Name" required>
-            <button type="submit">Add</button>
-        </form>
-        <h3>Members</h3>
-        <div id="memberList" class="grid">
+        <section>
+            <a href="/auth/google/auth">Authenticate with Google Calendar</a>
+        </section>
+
+        <div class="grid">
+            <div class="">
+                <h3>Add Member</h3>
+                <form id="addCalMemberForm">
+                    <input id="name" type="text" name="name" placeholder="Name" required>
+                    <button type="submit">Add</button>
+                </form>
+            </div>
+            <div>
+                <h3>Members</h3>
+                <div id="memberList"></div>
+            </div>
+
         </div>
 
         <h1>Calendars</h1>
-        <button id="fetchCalendarsBtn">Fetch Calendars</button>
-        <div id="calendarsList"></div>
+        <div id="calendarsList" class="grid"></div>
+
+        <h1>Events</h1>
+        <div id="eventsList"></div>
 
     </main>
     <script src="/static/js/app.js"></script>

@@ -7,6 +7,13 @@ import (
 
 type Middleware func(http.Handler) http.Handler
 
+func LoadMiddleware() Middleware {
+	return createMiddlewareStack(
+		loggingMiddleware,
+		corsMiddleware,
+	)
+}
+
 func createMiddlewareStack(xs ...Middleware) Middleware {
 	return func(next http.Handler) http.Handler {
 		for i := len(xs) - 1; i >= 0; i-- {
@@ -16,13 +23,6 @@ func createMiddlewareStack(xs ...Middleware) Middleware {
 		return next
 	}
 
-}
-
-func LoadMiddleware() Middleware {
-	return createMiddlewareStack(
-		loggingMiddleware,
-		corsMiddleware,
-	)
 }
 
 func loggingMiddleware(next http.Handler) http.Handler {

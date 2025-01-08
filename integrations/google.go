@@ -2,11 +2,9 @@ package integrations
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"log"
-	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -14,35 +12,6 @@ import (
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
 )
-
-func getClient(config *oauth2.Config) (*http.Client, error) {
-	token, err := getToken()
-	if err != nil {
-		return nil, err
-	}
-	return config.Client(context.Background(), token), nil
-}
-
-func getToken() (*oauth2.Token, error) {
-	tokenFile := "token.json"
-	token, err := getTokenFromFile(tokenFile)
-	fmt.Println(token)
-	if err != nil {
-		return nil, err
-	}
-	return token, nil
-}
-
-func getTokenFromFile(file string) (*oauth2.Token, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	tok := &oauth2.Token{}
-	err = json.NewDecoder(f).Decode(tok)
-	return tok, err
-}
 
 func HandleRequestToken(authCode string) (*oauth2.Token, error) {
 	config, err := getConfigFromCredentials()
@@ -54,17 +23,6 @@ func HandleRequestToken(authCode string) (*oauth2.Token, error) {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}
 	return token, nil
-}
-
-func SaveToken(path string, token *oauth2.Token) error {
-	fmt.Printf("Saving credential file to: %s\n", path)
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	json.NewEncoder(f).Encode(token)
-	return nil
 }
 
 func getConfigFromCredentials() (*oauth2.Config, error) {
@@ -88,15 +46,17 @@ func GoogleAuthUrl() (string, error) {
 	return config.AuthCodeURL("state-token", oauth2.AccessTypeOffline), nil
 }
 
-func CalendarService() (*calendar.Service, error) {
+func CalendarService(tokenStr string) (*calendar.Service, error) {
+	token := &oauth2.Token{
+		AccessToken: tokenStr,
+	}
+
 	config, err := getConfigFromCredentials()
 	if err != nil {
 		return nil, err
 	}
-	client, err := getClient(config)
-	if err != nil {
-		return nil, err
-	}
+
+	client := config.Client(context.Background(), token)
 
 	ctx := context.Background()
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
@@ -107,59 +67,83 @@ func CalendarService() (*calendar.Service, error) {
 }
 
 type Event struct {
-	Summary   string
-	EventDate string
+	Summary string `json:"summary"`
+	Start   string `json:"start"`
+	End     string `json:"end"`
 }
 
-func GetNextNCalendarEvents(srv *calendar.Service, calendarId string, n int64) ([]Event, error) {
+func GetCalendarEvents(srv *calendar.Service, calendarId string, n int64) ([]Event, error) {
+	calId := calendarOriginIdFromId(calendarDetailsStore, calendarId)
 	t := time.Now().Format(time.RFC3339)
-	events, err := srv.Events.List(calendarId).ShowDeleted(false).
+	events, err := srv.Events.List(calId).ShowDeleted(false).
 		SingleEvents(true).TimeMin(t).MaxResults(n).OrderBy("startTime").Do()
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Upcoming events:")
 	if len(events.Items) == 0 {
 		return []Event{}, nil
 	}
 
 	var calEvents = []Event{}
 	for _, item := range events.Items {
-		date := item.Start.DateTime
-		if date == "" {
-			date = item.Start.Date
+		startDate := item.Start.DateTime
+		if startDate == "" {
+			startDate = item.Start.Date
 		}
-		event := Event{item.Summary, date}
-		fmt.Println(event)
+		endDate := item.End.DateTime
+		if endDate == "" {
+			endDate = item.End.Date
+		}
+		event := Event{item.Summary, startDate, endDate}
 		calEvents = append(calEvents, event)
 	}
 	return calEvents, nil
 }
 
 type CalendarDetails struct {
-	Id          string `json:"id"`
+	Id          int `json:"id"`
+	OriginId    string
 	Summary     string `json:"summary"`
 	Description string `json:"description,omitempty"`
 	TimeZone    string `json:"timeZone,omitempty"`
 	Location    string `json:"location,omitempty"`
 }
 
+type Calendars []CalendarDetails
+
+func calendarOriginIdFromId(calendars []*CalendarDetails, id string) string {
+	for _, calendar := range calendars {
+		calId, err := strconv.Atoi(id)
+		if err != nil {
+			continue
+		}
+		if calendar.Id == calId {
+			return calendar.OriginId
+		}
+	}
+	return ""
+}
+
+var calendarDetailsStore = []*CalendarDetails{}
+
 func GetCalendars(srv *calendar.Service) ([]*CalendarDetails, error) {
-	calendarDetails := []*CalendarDetails{}
+	calendarDetailsStore = []*CalendarDetails{}
+
 	calendars, err := srv.CalendarList.List().Do()
 	if err != nil {
 		return nil, err
 	}
-	for _, item := range calendars.Items {
-		calendar := toCalendarDetails(item)
-		calendarDetails = append(calendarDetails, calendar)
+	for i, item := range calendars.Items {
+		calendar := toCalendarDetails(item, i)
+		calendarDetailsStore = append(calendarDetailsStore, calendar)
 	}
-	return calendarDetails, nil
+	return calendarDetailsStore, nil
 }
 
-func toCalendarDetails(entry *calendar.CalendarListEntry) *CalendarDetails {
+func toCalendarDetails(entry *calendar.CalendarListEntry, id int) *CalendarDetails {
 	return &CalendarDetails{
-		Id:          entry.Id,
+		Id:          id,
+		OriginId:    entry.Id,
 		Summary:     entry.Summary,
 		Description: entry.Description,
 		TimeZone:    entry.TimeZone,

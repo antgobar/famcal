@@ -1,0 +1,19 @@
+.calendar-item {
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.calendar-item:hover {
+    background-color: #3234ad;  /* Light grey background */
+    cursor: pointer;  /* Change the cursor to pointer */
+    transform: scale(1.02);  /* Slightly enlarge the element */
+}
+
+.event-item {
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.event-item:hover {
+    background-color: #3234ad;  /* Light grey background */
+    cursor: pointer;  /* Change the cursor to pointer */
+    transform: scale(1.02);  /* Slightly enlarge the element */
+}

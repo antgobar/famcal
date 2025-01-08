@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/antgobar/famcal/integrations"
 )
@@ -20,11 +21,16 @@ func handleGoogleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = integrations.SaveToken("token.json", token)
-	if err != nil {
-		http.Error(w, "Error caching token", http.StatusBadRequest)
-		return
-	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "oauth2_token",
+		Value:    token.AccessToken,
+		Expires:  time.Now().Add(time.Duration(time.Until(token.Expiry))),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/",
+	})
+
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 

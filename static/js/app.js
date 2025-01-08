@@ -16,7 +16,7 @@ function getCalMembers() {
 
             data.forEach(member => {
                 const article = document.createElement('article');
-                article.classList.add('card'); // Use Pico's styling
+                article.classList.add('card'); 
                 article.textContent = member.name;
                 article.id = `member-${member.id}`;
                 members.appendChild(article);
@@ -58,34 +58,60 @@ function addCalMemberOnSubmit() {
     });
 }
 
-document.getElementById("fetchCalendarsBtn").addEventListener("click", function() {
+function getCalendars() {
     fetch("http://localhost:8080/calendars")
         .then(response => response.json())
         .then(calendars => {
             const calendarsListDiv = document.getElementById("calendarsList");
-            calendarsListDiv.innerHTML = "";  // Clear previous content
+            calendarsListDiv.innerHTML = "";
 
             calendars.forEach(calendar => {
                 const calendarDiv = document.createElement("div");
-
                 const calendarHTML = `
-                    <article>
-                    <h3>${calendar.summary}</h3>
-                    <p><strong>ID:</strong> ${calendar.id}</p>
-                    <p><strong>Description:</strong> ${calendar.description || 'N/A'}</p>
-                    <p><strong>Time Zone:</strong> ${calendar.timeZone || 'N/A'}</p>
-                    <p><strong>Location:</strong> ${calendar.location || 'N/A'}</p>
+                    <article id="${calendar.id}" class="calendar-item">
+                        <strong>${calendar.summary}</strong>
+                        <p>${calendar.description || 'N/A'}</p>
                     </article>
                 `;
                 calendarDiv.innerHTML = calendarHTML;
                 calendarsListDiv.appendChild(calendarDiv);
+                calendarDiv.querySelector(".calendar-item").addEventListener("click", function () {
+                    fetchEvents(this.id);
+                });
             });
+
         })
         .catch(error => {
             console.error("Error fetching calendars:", error);
         });
-});
+}
+
+function fetchEvents(calendarId) {
+    eventsContainer = document.getElementById("eventsList");
+    fetch(`http://localhost:8080/events?calendarId=${calendarId}&nEvents=10`)
+        .then(response => response.json())
+        .then(events => {
+            eventsContainer.innerHTML = "";
+
+            events.forEach(event => {
+                const eventDiv = document.createElement("div");
+                const eventHTML = `
+                    <article class="event-item">
+                        <h3>${event.summary}</h3>
+                        <p><strong>Start:</strong> ${event.start}</p>
+                        <p><strong>End:</strong> ${event.end}</p>
+                    </article>
+                `;
+                eventDiv.innerHTML = eventHTML;
+                eventsContainer.appendChild(eventDiv);
+            });
+        })
+        .catch(error => {
+            console.error(`Error fetching events for calendar ${calendarId}:`, error);
+        });
+}
 
 // Initialize
+getCalendars();
 getCalMembers();
 addCalMemberOnSubmit();
