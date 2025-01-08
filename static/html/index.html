@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Organise your Family Life">
+    <link rel="stylesheet" href="/static/css/pico.min.css">
+    <title>FamCal</title>
+</head>
+
+<body class="container">
+    <header>
+        <h1></h1>
+        <nav>
+            <ul>
+                <a href="/">
+                    <li>
+                        <h1>Famcal</h1>
+                    </li>
+                </a>
+            </ul>
+            <ul>
+                <li><a href="/terms">Terms</a></li>
+                <li><a href="/privacy">Privacy</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <a href="/auth/google/auth">Authenticate with Google Calendar</a>
+        <form id="addCalMemberForm">
+            <label for="name">Add member</label>
+            <input id="name" type="text" name="name" placeholder="Name" required>
+            <button type="submit">Add</button>
+        </form>
+        <h3>Members</h3>
+        <div id="memberList" class="grid">
+        </div>
+
+        <h1>Calendars</h1>
+        <button id="fetchCalendarsBtn">Fetch Calendars</button>
+        <div id="calendarsList"></div>
+
+    </main>
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>
