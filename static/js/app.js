@@ -69,8 +69,7 @@ function getCalendars() {
                 const calendarDiv = document.createElement("div");
                 const calendarHTML = `
                     <article id="${calendar.id}" class="calendar-item">
-                        <strong>${calendar.summary}</strong>
-                        <p>${calendar.description || 'N/A'}</p>
+                        <strong>${calendar.summary}</strong>: ${calendar.description || 'N/A'}</p>
                     </article>
                 `;
                 calendarDiv.innerHTML = calendarHTML;
@@ -95,11 +94,13 @@ function fetchEvents(calendarId) {
 
             events.forEach(event => {
                 const eventDiv = document.createElement("div");
+                const eventDate = extractDateFromISO(event.start);
+                const startTime = extractTimeFromISO(event.start);
+                const endTime = extractTimeFromISO(event.end);
                 const eventHTML = `
                     <article class="event-item">
-                        <h3>${event.summary}</h3>
-                        <p><strong>Start:</strong> ${event.start}</p>
-                        <p><strong>End:</strong> ${event.end}</p>
+                        <strong>${event.summary}</strong>: ${eventDate}
+                        <p><strong>Start:</strong> ${startTime} <strong>End:</strong> ${endTime}</p>
                     </article>
                 `;
                 eventDiv.innerHTML = eventHTML;
@@ -109,6 +110,21 @@ function fetchEvents(calendarId) {
         .catch(error => {
             console.error(`Error fetching events for calendar ${calendarId}:`, error);
         });
+}
+
+function extractDateFromISO(isoDateString) {
+    const date = new Date(isoDateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Zero-padding for single digit months
+    const day = String(date.getDate()).padStart(2, '0'); // Zero-padding for single digit days
+    return `${year}-${month}-${day}`;
+}
+
+function extractTimeFromISO(isoDateString) {
+    const date = new Date(isoDateString);
+    const hours = String(date.getHours()).padStart(2, '0');  // Zero-padding for single digit hours
+    const minutes = String(date.getMinutes()).padStart(2, '0'); // Zero-padding for single digit minutes
+    return `${hours}:${minutes}`;
 }
 
 // Initialize
