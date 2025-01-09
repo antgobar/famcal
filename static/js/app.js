@@ -51,8 +51,8 @@ function addCalMemberOnSubmit() {
             })
             .then(data => {
                 console.log('CalMember added:', data);
-                document.getElementById('name').value = ''; // Reset input field
-                getCalMembers(); // Refresh the member list
+                document.getElementById('name').value = '';
+                getCalMembers();
             })
             .catch(error => console.error('Error adding member:', error));
     });
@@ -62,22 +62,39 @@ function getCalendars() {
     fetch("http://localhost:8080/calendars")
         .then(response => response.json())
         .then(calendars => {
-            const calendarsListDiv = document.getElementById("calendarsList");
-            calendarsListDiv.innerHTML = "";
+            const selectElement = document.getElementById("calendarSelect");
+            selectElement.innerHTML = "";
 
-            calendars.forEach(calendar => {
-                const calendarDiv = document.createElement("div");
-                const calendarHTML = `
-                    <article id="${calendar.id}" class="calendar-item">
-                        <strong>${calendar.summary}</strong>: ${calendar.description || 'N/A'}</p>
-                    </article>
-                `;
-                calendarDiv.innerHTML = calendarHTML;
-                calendarsListDiv.appendChild(calendarDiv);
-                calendarDiv.querySelector(".calendar-item").addEventListener("click", function () {
-                    fetchEvents(this.id);
+            if (calendars.length > 0) {
+                const defaultOption = document.createElement("option");
+                defaultOption.selected = true;
+                defaultOption.value = calendars[0].id;
+                defaultOption.textContent = calendars[0].summary;
+                defaultOption.setAttribute("data-calendarDescription", calendars[0].description || calendars[0].summary);
+                selectElement.appendChild(defaultOption);
+                fetchEvents(calendars[0].id);
+                const descriptionElement = document.getElementById("calendarDescription");
+                descriptionElement.textContent = calendars[0].description || calendars[0].summary;
+
+                calendars.slice(1).forEach(calendar => {
+                    const option = document.createElement("option");
+                    option.value = calendar.id;
+                    option.textContent = calendar.summary;
+                    option.setAttribute("data-calendarDescription", calendar.description || calendar.summary);
+                    selectElement.appendChild(option);
                 });
-            });
+
+                selectElement.addEventListener("change", function () {
+                    const selectedCalendarId = this.value;
+                    if (selectedCalendarId) {
+                        fetchEvents(selectedCalendarId);
+                        const selectedOption = this.selectedOptions[0];
+                        const calendarDescription = selectedOption.getAttribute("data-calendarDescription");
+                        const descriptionElement = document.getElementById("calendarDescription");
+                        descriptionElement.textContent = calendarDescription;
+                    }
+                });
+            }
 
         })
         .catch(error => {
@@ -125,6 +142,15 @@ function extractTimeFromISO(isoDateString) {
     const hours = String(date.getHours()).padStart(2, '0');  // Zero-padding for single digit hours
     const minutes = String(date.getMinutes()).padStart(2, '0'); // Zero-padding for single digit minutes
     return `${hours}:${minutes}`;
+}
+
+function closeDialogById(dialogId) {
+    const dialog = document.getElementById(dialogId);
+    if (dialog) {
+        dialog.close();
+    } else {
+        console.error(`Dialog with id ${dialogId} not found.`);
+    }
 }
 
 // Initialize

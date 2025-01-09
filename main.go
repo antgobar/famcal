@@ -7,12 +7,7 @@ import (
 	"github.com/antgobar/famcal/handlers"
 	"github.com/antgobar/famcal/middleware"
 	"github.com/antgobar/famcal/resources"
-	"github.com/antgobar/famcal/store"
 )
-
-func init() {
-	store.MembersStore.PopulateDummy()
-}
 
 func main() {
 

@@ -17,3 +17,8 @@
     cursor: pointer;  /* Change the cursor to pointer */
     transform: scale(1.02);  /* Slightly enlarge the element */
 }
+
+.fam-cal-nav {
+    background-color: var(--pico-color-azure-400);
+    border-radius: 0.5rem;
+}

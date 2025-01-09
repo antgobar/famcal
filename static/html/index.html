@@ -6,59 +6,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Organise your Family Life">
     <link rel="stylesheet" href="/static/css/pico.min.css">
+    <link rel="stylesheet" href="/static/css/pico.colors.min.css">
     <link rel="stylesheet" href="/static/css/styles.css">
     <title>FamCal</title>
 </head>
 
-<body class="container">
-    <header>
-        <h1></h1>
-        <nav>
+<body>
+    <header class="pico-background-azure-900">
+        <nav class="container">
             <ul>
-                <a href="/">
-                    <li>
-                        <h1>Famcal</h1>
-                    </li>
-                </a>
+                <li><a href="/">
+                        <h1>FamCal</h1>
+                    </a></li>
             </ul>
             <ul>
+                <li>
+                    <select id="calendarSelect" name="select" aria-label="Select" required>
+                    </select>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <div>
+                        <button onclick="document.getElementById('add-member-dialog').showModal()">Members</button>
+                        <dialog id="add-member-dialog">
+                            <article>
+                                <header>
+                                    <form method="dialog">
+                                        <button aria-label="Close" rel="prev"></button>
+                                    </form>
+                                    <strong>Members</strong>
+                                </header>
+                                <form id="addCalMemberForm">
+                                    <label for="name">Member name</label>
+                                    <input id="name" type="text" name="name" placeholder="Add a family member" required>
+                                </form>
+                                <div id="memberList"></div>
+                            </article>
+                        </dialog>
+                    </div>
+                </li>
                 <li><a href="/terms">Terms</a></li>
                 <li><a href="/privacy">Privacy</a></li>
+                <li>
+                    <a href="/auth/google/auth">Google Calendar Auth</a>
+                </li>
             </ul>
         </nav>
     </header>
 
-    <main>
-        <section>
-            <a href="/auth/google/auth">Authenticate with Google Calendar</a>
-        </section>
-
-        <div class="grid">
-            <div class="">
-                <h3>Add Member</h3>
-                <form id="addCalMemberForm">
-                    <input id="name" type="text" name="name" placeholder="Name" required>
-                    <button type="submit">Add</button>
-                </form>
-            </div>
-            <div>
-                <h3>Members</h3>
-                <div id="memberList"></div>
-            </div>
-
-        </div>
-        <div class="grid">
-            <div>
-                <h1>Calendars</h1>
-                <div id="calendarsList"></div>
-            </div>
-            <div>
-                <h1>Events</h1>
-                <div id="eventsList"></div>
-            </div>
-        </div>
-
-
+    <main class="container">
+        <h4 id="calendarDescription"></h4>
+        <div id="calendarsList"></div>
+        <h2>Events</h2>
+        <div id="eventsList"></div>
     </main>
     <script src="/static/js/app.js"></script>
 </body>

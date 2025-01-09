@@ -25,7 +25,3 @@ func (u Members) nextId() int {
 	maxId++
 	return maxId
 }
-
-func (m Members) PopulateDummy() {
-	m.CreateMember("Anton")
-}

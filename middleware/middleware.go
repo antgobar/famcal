@@ -22,7 +22,6 @@ func createMiddlewareStack(xs ...Middleware) Middleware {
 		}
 		return next
 	}
-
 }
 
 func loggingMiddleware(next http.Handler) http.Handler {
