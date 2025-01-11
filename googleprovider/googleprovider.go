@@ -1,10 +1,9 @@
-package integrations
+package googleprovider
 
 import (
 	"context"
 	"log"
 	"os"
-	"strconv"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -13,8 +12,12 @@ import (
 	"google.golang.org/api/option"
 )
 
+type GoogleCalendar struct {
+	service *calendar.Service
+}
+
 func HandleRequestToken(authCode string) (*oauth2.Token, error) {
-	config, err := getConfigFromCredentials()
+	config, err := loadConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -25,33 +28,33 @@ func HandleRequestToken(authCode string) (*oauth2.Token, error) {
 	return token, nil
 }
 
-func getConfigFromCredentials() (*oauth2.Config, error) {
-	b, err := os.ReadFile("credentials.json")
-	if err != nil {
-		return nil, err
-	}
-
-	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
-	if err != nil {
-		return nil, err
-	}
-	return config, nil
+func loadConfig() (*oauth2.Config, error) {
+	clientID := os.Getenv("GOOGLE_CLIENT_ID")
+	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
+	redirectURI := os.Getenv("GOOGLE_REDIRECT_URI")
+	return &oauth2.Config{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		RedirectURL:  redirectURI,
+		Scopes:       []string{calendar.CalendarScope},
+		Endpoint:     google.Endpoint,
+	}, nil
 }
 
-func GoogleAuthUrl() (string, error) {
-	config, err := getConfigFromCredentials()
+func AuthUrl() (string, error) {
+	config, err := loadConfig()
 	if err != nil {
 		return "", err
 	}
 	return config.AuthCodeURL("state-token", oauth2.AccessTypeOffline), nil
 }
 
-func CalendarService(tokenStr string) (*calendar.Service, error) {
+func NewCalendar(tokenStr string) (*GoogleCalendar, error) {
 	token := &oauth2.Token{
 		AccessToken: tokenStr,
 	}
 
-	config, err := getConfigFromCredentials()
+	config, err := loadConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +66,7 @@ func CalendarService(tokenStr string) (*calendar.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	return srv, nil
+	return &GoogleCalendar{srv}, nil
 }
 
 type Event struct {
@@ -72,10 +75,9 @@ type Event struct {
 	End     string `json:"end"`
 }
 
-func GetCalendarEvents(srv *calendar.Service, calendarId string, n int64) ([]Event, error) {
-	calId := calendarOriginIdFromId(calendarDetailsStore, calendarId)
+func (cal GoogleCalendar) GetCalendarEvents(calendarId string, n int64) ([]Event, error) {
 	t := time.Now().Format(time.RFC3339)
-	events, err := srv.Events.List(calId).ShowDeleted(false).
+	events, err := cal.service.Events.List(calendarId).ShowDeleted(false).
 		SingleEvents(true).TimeMin(t).MaxResults(n).OrderBy("startTime").Do()
 	if err != nil {
 		return nil, err
@@ -101,8 +103,7 @@ func GetCalendarEvents(srv *calendar.Service, calendarId string, n int64) ([]Eve
 }
 
 type CalendarDetails struct {
-	Id          int `json:"id"`
-	OriginId    string
+	Id          string `json:"id"`
 	Summary     string `json:"summary"`
 	Description string `json:"description,omitempty"`
 	TimeZone    string `json:"timeZone,omitempty"`
@@ -111,39 +112,25 @@ type CalendarDetails struct {
 
 type Calendars []CalendarDetails
 
-func calendarOriginIdFromId(calendars []*CalendarDetails, id string) string {
-	for _, calendar := range calendars {
-		calId, err := strconv.Atoi(id)
-		if err != nil {
-			continue
-		}
-		if calendar.Id == calId {
-			return calendar.OriginId
-		}
-	}
-	return ""
-}
-
 var calendarDetailsStore = []*CalendarDetails{}
 
-func GetCalendars(srv *calendar.Service) ([]*CalendarDetails, error) {
+func (cal GoogleCalendar) GetCalendars() ([]*CalendarDetails, error) {
 	calendarDetailsStore = []*CalendarDetails{}
 
-	calendars, err := srv.CalendarList.List().Do()
+	calendars, err := cal.service.CalendarList.List().Do()
 	if err != nil {
 		return nil, err
 	}
-	for i, item := range calendars.Items {
-		calendar := toCalendarDetails(item, i)
+	for _, item := range calendars.Items {
+		calendar := toCalendarDetails(item)
 		calendarDetailsStore = append(calendarDetailsStore, calendar)
 	}
 	return calendarDetailsStore, nil
 }
 
-func toCalendarDetails(entry *calendar.CalendarListEntry, id int) *CalendarDetails {
+func toCalendarDetails(entry *calendar.CalendarListEntry) *CalendarDetails {
 	return &CalendarDetails{
-		Id:          id,
-		OriginId:    entry.Id,
+		Id:          entry.Id,
 		Summary:     entry.Summary,
 		Description: entry.Description,
 		TimeZone:    entry.TimeZone,

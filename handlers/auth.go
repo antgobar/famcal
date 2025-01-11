@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/antgobar/famcal/integrations"
+	"github.com/antgobar/famcal/googleprovider"
 )
 
 func handleGoogleAuthCallback(w http.ResponseWriter, r *http.Request) {
@@ -15,7 +15,7 @@ func handleGoogleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := integrations.HandleRequestToken(authCode)
+	token, err := googleprovider.HandleRequestToken(authCode)
 	if err != nil {
 		http.Error(w, "Error retrieving token", http.StatusBadRequest)
 		return
@@ -35,7 +35,7 @@ func handleGoogleAuthCallback(w http.ResponseWriter, r *http.Request) {
 }
 
 func authHandler(w http.ResponseWriter, r *http.Request) {
-	url, err := integrations.GoogleAuthUrl()
+	url, err := googleprovider.AuthUrl()
 	if err != nil || url == "" {
 		http.Error(w, fmt.Sprintf("Auth error: %v", err), http.StatusUnauthorized)
 		return

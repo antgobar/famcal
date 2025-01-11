@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/antgobar/famcal/integrations"
+	"github.com/antgobar/famcal/googleprovider"
 )
 
 func getCalendars(w http.ResponseWriter, r *http.Request) {
@@ -16,14 +16,14 @@ func getCalendars(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	service, err := integrations.CalendarService(token)
+	calendar, err := googleprovider.NewCalendar(token)
 	if err != nil {
 		log.Printf("Error creating calendar service: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	calendars, err := integrations.GetCalendars(service)
+	calendars, err := calendar.GetCalendars()
 	if err != nil {
 		log.Printf("Error fetching calendar: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

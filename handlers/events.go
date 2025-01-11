@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/antgobar/famcal/integrations"
+	"github.com/antgobar/famcal/googleprovider"
 )
 
 type eventsQuery struct {
@@ -42,7 +42,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	service, err := integrations.CalendarService(token)
+	calendar, err := googleprovider.NewCalendar(token)
 	if err != nil {
 		log.Printf("Error creating calendar service: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -55,7 +55,7 @@ func getEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	events, err := integrations.GetCalendarEvents(service, params.calendarId, params.nEvents)
+	events, err := calendar.GetCalendarEvents(params.calendarId, params.nEvents)
 	if err != nil {
 		log.Printf("Error fetching events: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
