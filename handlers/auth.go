@@ -3,39 +3,29 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/antgobar/famcal/googleprovider"
 )
 
-func handleGoogleAuthCallback(w http.ResponseWriter, r *http.Request) {
+func (h Handler) handleGoogleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	authCode := r.URL.Query().Get("code")
 	if authCode == "" {
 		http.Error(w, "Code not found", http.StatusBadRequest)
 		return
 	}
 
-	token, err := googleprovider.HandleRequestToken(authCode)
+	token, err := googleprovider.HandleRequestToken(authCode, h.config.GoogleOauth2Config)
 	if err != nil {
 		http.Error(w, "Error retrieving token", http.StatusBadRequest)
 		return
 	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "oauth2_token",
-		Value:    token.AccessToken,
-		Expires:  time.Now().Add(time.Duration(time.Until(token.Expiry))),
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
-		Path:     "/",
-	})
+	SetOauth2TokenCookie(w, token)
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func authHandler(w http.ResponseWriter, r *http.Request) {
-	url, err := googleprovider.AuthUrl()
+func (h Handler) authHandler(w http.ResponseWriter, r *http.Request) {
+	url, err := googleprovider.AuthUrl(*h.config.GoogleOauth2Config)
 	if err != nil || url == "" {
 		http.Error(w, fmt.Sprintf("Auth error: %v", err), http.StatusUnauthorized)
 		return

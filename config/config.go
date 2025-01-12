@@ -11,14 +11,19 @@ import (
 
 type Config struct {
 	GoogleOauth2Config *oauth2.Config
+	ServerAddress      string
 }
 
-func LoadConfig() (*Config, error) {
+func Load() (*Config, error) {
 	googleOauth2Config, err := loadGoogleOauth2Config()
 	if err != nil {
 		return nil, err
 	}
-	return &Config{GoogleOauth2Config: googleOauth2Config}, nil
+	serverAddr, err := loadServerConfig()
+	if err != nil {
+		return nil, err
+	}
+	return &Config{GoogleOauth2Config: googleOauth2Config, ServerAddress: *serverAddr}, nil
 }
 
 func loadGoogleOauth2Config() (*oauth2.Config, error) {
@@ -43,4 +48,16 @@ func loadGoogleOauth2Config() (*oauth2.Config, error) {
 		Scopes:       []string{calendar.CalendarScope},
 		Endpoint:     google.Endpoint,
 	}, nil
+}
+
+func newEnvVarErr(varName string) string {
+	return "environment variable " + varName + " is required"
+}
+
+func loadServerConfig() (*string, error) {
+	serverAddr := os.Getenv("SERVER_ADDR")
+	if serverAddr == "" {
+		return nil, errors.New(newEnvVarErr("SERVER_ADDR"))
+	}
+	return &serverAddr, nil
 }

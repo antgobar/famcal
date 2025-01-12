@@ -3,11 +3,9 @@ package googleprovider
 import (
 	"context"
 	"log"
-	"os"
 	"time"
 
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
 )
@@ -16,11 +14,7 @@ type GoogleCalendar struct {
 	service *calendar.Service
 }
 
-func HandleRequestToken(authCode string) (*oauth2.Token, error) {
-	config, err := loadConfig()
-	if err != nil {
-		return nil, err
-	}
+func HandleRequestToken(authCode string, config *oauth2.Config) (*oauth2.Token, error) {
 	token, err := config.Exchange(context.TODO(), authCode)
 	if err != nil {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
@@ -28,37 +22,14 @@ func HandleRequestToken(authCode string) (*oauth2.Token, error) {
 	return token, nil
 }
 
-func loadConfig() (*oauth2.Config, error) {
-	clientID := os.Getenv("GOOGLE_CLIENT_ID")
-	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
-	redirectURI := os.Getenv("GOOGLE_REDIRECT_URI")
-	return &oauth2.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		RedirectURL:  redirectURI,
-		Scopes:       []string{calendar.CalendarScope},
-		Endpoint:     google.Endpoint,
-	}, nil
-}
-
-func AuthUrl() (string, error) {
-	config, err := loadConfig()
-	if err != nil {
-		return "", err
-	}
+func AuthUrl(config oauth2.Config) (string, error) {
 	return config.AuthCodeURL("state-token", oauth2.AccessTypeOffline), nil
 }
 
-func NewCalendar(tokenStr string) (*GoogleCalendar, error) {
+func NewCalendar(tokenStr string, config *oauth2.Config) (*GoogleCalendar, error) {
 	token := &oauth2.Token{
 		AccessToken: tokenStr,
 	}
-
-	config, err := loadConfig()
-	if err != nil {
-		return nil, err
-	}
-
 	client := config.Client(context.Background(), token)
 
 	ctx := context.Background()

@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/antgobar/famcal/config"
 	"github.com/antgobar/famcal/handlers"
 	"github.com/antgobar/famcal/middleware"
 	"github.com/antgobar/famcal/resources"
@@ -12,19 +14,22 @@ import (
 
 func main() {
 	loadEnv()
-	router := http.NewServeMux()
-	resources.Load(router)
-	handlers.Register(router)
+	cfg := mustLoadConfig()
+
+	mux := http.NewServeMux()
+	resources.Load(mux, cfg)
+	handlers.Register(mux, cfg)
 	stack := middleware.LoadMiddleware()
 
-	const addr = "localhost:8080"
-
 	server := http.Server{
-		Addr:    addr,
-		Handler: stack(router),
+		Addr:         cfg.ServerAddress,
+		Handler:      stack(mux),
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  15 * time.Second,
 	}
 
-	log.Println("Server starting on", addr)
+	log.Println("Server starting on", cfg.ServerAddress)
 	server.ListenAndServe()
 }
 
@@ -33,4 +38,13 @@ func loadEnv() {
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
+}
+
+func mustLoadConfig() *config.Config {
+	config, err := config.Load()
+	if err != nil {
+		log.Fatalf("Error creating config: %v", err)
+	}
+	return config
+
 }
