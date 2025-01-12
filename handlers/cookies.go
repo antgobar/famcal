@@ -30,3 +30,16 @@ func SetOauth2TokenCookie(w http.ResponseWriter, token *oauth2.Token) {
 	}
 	http.SetCookie(w, cookie)
 }
+
+func ClearOauth2TokenCookie(w http.ResponseWriter) {
+	cookie := &http.Cookie{
+		Name:     oauth2CookieName,
+		Value:    "",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   true,
+		Path:     "/",
+	}
+	http.SetCookie(w, cookie)
+}

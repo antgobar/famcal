@@ -21,5 +21,6 @@ func Register(mux *http.ServeMux, config *config.Config) {
 	mux.HandleFunc("GET /calendars", h.getCalendars)
 	mux.HandleFunc("GET /events", h.getEvents)
 	mux.HandleFunc("GET /auth/google/callback", h.handleGoogleAuthCallback)
-	mux.HandleFunc("GET /auth/google/auth", h.authHandler)
+	mux.HandleFunc("GET /auth/google/authorise", h.googleAuthHandler)
+	mux.HandleFunc("GET /auth/google/logout", h.logOutGoogle)
 }

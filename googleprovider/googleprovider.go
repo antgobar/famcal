@@ -2,7 +2,6 @@ package googleprovider
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -14,24 +13,11 @@ type GoogleCalendar struct {
 	service *calendar.Service
 }
 
-func HandleRequestToken(authCode string, config *oauth2.Config) (*oauth2.Token, error) {
-	token, err := config.Exchange(context.TODO(), authCode)
-	if err != nil {
-		log.Fatalf("Unable to retrieve token from web: %v", err)
-	}
-	return token, nil
-}
-
-func AuthUrl(config oauth2.Config) (string, error) {
-	return config.AuthCodeURL("state-token", oauth2.AccessTypeOffline), nil
-}
-
 func NewCalendar(tokenStr string, config *oauth2.Config) (*GoogleCalendar, error) {
 	token := &oauth2.Token{
 		AccessToken: tokenStr,
 	}
 	client := config.Client(context.Background(), token)
-
 	ctx := context.Background()
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
