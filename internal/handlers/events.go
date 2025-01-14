@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/antgobar/famcal/googleprovider"
+	"github.com/antgobar/famcal/internal/googleprovider"
 )
 
 type eventsQuery struct {

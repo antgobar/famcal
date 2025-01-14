@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/antgobar/famcal/store"
+	"github.com/antgobar/famcal/internal/repository"
 )
 
 type CreateMemberRequest struct {
@@ -12,13 +12,13 @@ type CreateMemberRequest struct {
 }
 
 type MemberResponse struct {
-	CalMember store.Member `json:"member"`
+	CalMember repository.Member `json:"member"`
 	Message   string       `json:"message"`
 }
 
 func getMembers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(store.MembersStore)
+	json.NewEncoder(w).Encode(repository.MembersStore)
 }
 
 func addMember(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +31,7 @@ func addMember(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Name is required", http.StatusBadRequest)
 		return
 	}
-	member := store.MembersStore.CreateMember(req.Name)
+	member := repository.MembersStore.CreateMember(req.Name)
 
 	response := MemberResponse{
 		CalMember: member,

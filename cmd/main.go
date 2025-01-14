@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/antgobar/famcal/config"
-	"github.com/antgobar/famcal/handlers"
-	"github.com/antgobar/famcal/middleware"
-	"github.com/antgobar/famcal/resources"
+	"github.com/antgobar/famcal/internal/handlers"
+	"github.com/antgobar/famcal/internal/middleware"
+	"github.com/antgobar/famcal/internal/resources"
 	"github.com/joho/godotenv"
 )
 

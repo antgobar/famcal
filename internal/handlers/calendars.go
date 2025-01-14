@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/antgobar/famcal/googleprovider"
+	"github.com/antgobar/famcal/internal/googleprovider"
 )
 
 func (h Handler) getCalendars(w http.ResponseWriter, r *http.Request) {

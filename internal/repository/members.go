@@ -1,4 +1,4 @@
-package store
+package repository
 
 var MembersStore Members = []Member{}
 
