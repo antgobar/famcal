@@ -1,25 +1,12 @@
-ARG GO_VERSION=1.23.2
-
-FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build
-WORKDIR /src
-RUN --mount=type=cache,target=/go/pkg/mod/ \
-    --mount=type=bind,source=go.sum,target=go.sum \
-    --mount=type=bind,source=go.mod,target=go.mod \
-    go mod download -x
-ARG TARGETARCH
-COPY . /src
-RUN go generate
-RUN --mount=type=cache,target=/go/pkg/mod/ \
-    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/server .
+FROM golang:1.23.2-alpine AS build
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod tidy
+COPY . .
+RUN go build -o bin/app ./cmd
 
 FROM alpine:latest AS final
-RUN --mount=type=cache,target=/var/cache/apk \
-    apk --update add \
-        ca-certificates \
-        tzdata \
-        curl \
-        && \
-        update-ca-certificates
+RUN apk update && apk add --no-cache ca-certificates
 ARG UID=10001
 RUN adduser \
     --disabled-password \
@@ -31,6 +18,6 @@ RUN adduser \
     appuser
 USER appuser
 
-COPY --from=build /bin/server /bin/
+COPY --from=build /app/bin/app .
 EXPOSE 8090
-ENTRYPOINT [ "/bin/server" ]
+ENTRYPOINT [ "./app" ]
