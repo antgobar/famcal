@@ -1,5 +1,5 @@
 function getCalMembers() {
-    fetch('http://localhost:8080/members')
+    fetch(`${API_BASE_URL}/members`)
         .then(response => {
             if (!response.ok) {u
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -36,7 +36,7 @@ function addCalMemberOnSubmit() {
             return;
         }
 
-        fetch('http://localhost:8080/members', {
+        fetch(`${API_BASE_URL}/members`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -59,7 +59,7 @@ function addCalMemberOnSubmit() {
 }
 
 function getCalendars() {
-    fetch("http://localhost:8080/calendars")
+    fetch(`${API_BASE_URL}/calendars`)
         .then(response => response.json())
         .then(calendars => {
             const selectElement = document.getElementById("calendarSelect");
@@ -78,7 +78,7 @@ function getCalendars() {
 
                 calendars.slice(1).forEach(calendar => {
                     const option = document.createElement("option");
-                    option.value = calendar.id;
+                    option.value = encodeURIComponent(calendar.id);
                     option.textContent = calendar.summary;
                     option.setAttribute("data-calendarDescription", calendar.description || calendar.summary);
                     selectElement.appendChild(option);
@@ -104,7 +104,7 @@ function getCalendars() {
 
 function fetchEvents(calendarId) {
     eventsContainer = document.getElementById("eventsList");
-    fetch(`http://localhost:8080/events?calendarId=${calendarId}&nEvents=10`)
+    fetch(`${API_BASE_URL}/events?calendarId=${calendarId}&nEvents=10`)
         .then(response => response.json())
         .then(events => {
             eventsContainer.innerHTML = "";

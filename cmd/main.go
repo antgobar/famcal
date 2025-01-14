@@ -13,38 +13,37 @@ import (
 )
 
 func main() {
-	loadEnv()
-	cfg := mustLoadConfig()
-
+	cfg := config.MustLoadConfig()
 	mux := http.NewServeMux()
 	resources.Load(mux, cfg)
 	handlers.Register(mux, cfg)
 	stack := middleware.LoadMiddleware()
 
 	server := http.Server{
-		Addr:         cfg.ServerAddress,
+		Addr:         getServerAddr(*cfg),
 		Handler:      stack(mux),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  15 * time.Second,
 	}
 
-	log.Println("Server starting on", cfg.ServerAddress)
+	log.Println("Server starting on", server.Addr)
 	server.ListenAndServe()
 }
 
-func loadEnv() {
+func init() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 }
 
-func mustLoadConfig() *config.Config {
-	config, err := config.Load()
-	if err != nil {
-		log.Fatalf("Error creating config: %v", err)
+func getServerAddr(cfg config.Config) string {
+	if (cfg.Env == "development" || cfg.Env == "") && cfg.ServerAddress == "" {
+		return "localhost:8080"
 	}
-	return config
-
+	if cfg.ServerAddress == "" {
+		return "localhost:8080"
+	}
+	return cfg.ServerAddress
 }

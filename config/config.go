@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"log"
 	"os"
 
 	"golang.org/x/oauth2"
@@ -12,39 +13,51 @@ import (
 type Config struct {
 	GoogleOauth2Config *oauth2.Config
 	ServerAddress      string
+	Env                string
 }
 
-func Load() (*Config, error) {
+func MustLoadConfig() *Config {
+	config, err := loadConfig()
+	if err != nil {
+		log.Fatalf("Error creating config: %v", err)
+	}
+	return config
+}
+
+func loadConfig() (*Config, error) {
 	googleOauth2Config, err := loadGoogleOauth2Config()
 	if err != nil {
 		return nil, err
 	}
-	serverAddr, err := loadServerConfig()
+	serverAddr, err := loadSimpleStringEnvVar("SERVER_ADDR", true)
 	if err != nil {
 		return nil, err
 	}
-	return &Config{GoogleOauth2Config: googleOauth2Config, ServerAddress: *serverAddr}, nil
+	env, err := loadSimpleStringEnvVar("ENV", true)
+	if err != nil {
+		return nil, err
+	}
+	return &Config{GoogleOauth2Config: googleOauth2Config, ServerAddress: *serverAddr, Env: *env}, nil
 }
 
 func loadGoogleOauth2Config() (*oauth2.Config, error) {
-	clientID := os.Getenv("GOOGLE_CLIENT_ID")
-	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
-	redirectURI := os.Getenv("GOOGLE_REDIRECT_URI")
-
-	if clientID == "" {
-		return nil, errors.New("environment variable GOOGLE_CLIENT_ID is required")
+	clientID, err := loadSimpleStringEnvVar("GOOGLE_CLIENT_ID", false)
+	if err != nil {
+		return nil, err
 	}
-	if clientSecret == "" {
-		return nil, errors.New("environment variable GOOGLE_CLIENT_SECRET is required")
+	clientSecret, err := loadSimpleStringEnvVar("GOOGLE_CLIENT_SECRET", false)
+	if err != nil {
+		return nil, err
 	}
-	if redirectURI == "" {
-		return nil, errors.New("environment variable GOOGLE_REDIRECT_URI is required")
+	redirectURI, err := loadSimpleStringEnvVar("GOOGLE_REDIRECT_URI", false)
+	if err != nil {
+		return nil, err
 	}
 
 	return &oauth2.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		RedirectURL:  redirectURI,
+		ClientID:     *clientID,
+		ClientSecret: *clientSecret,
+		RedirectURL:  *redirectURI,
 		Scopes:       []string{calendar.CalendarScope},
 		Endpoint:     google.Endpoint,
 	}, nil
@@ -54,10 +67,10 @@ func newEnvVarErr(varName string) string {
 	return "environment variable " + varName + " is required"
 }
 
-func loadServerConfig() (*string, error) {
-	serverAddr := os.Getenv("SERVER_ADDR")
-	if serverAddr == "" {
-		return nil, errors.New(newEnvVarErr("SERVER_ADDR"))
+func loadSimpleStringEnvVar(name string, canBeEmpty bool) (*string, error) {
+	envVar := os.Getenv(name)
+	if envVar == "" && !canBeEmpty {
+		return nil, errors.New(newEnvVarErr(name))
 	}
-	return &serverAddr, nil
+	return &envVar, nil
 }

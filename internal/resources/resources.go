@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 
@@ -9,7 +10,7 @@ import (
 
 func Load(router *http.ServeMux, config *config.Config) {
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		serveIndex(w, r, config.ServerAddress)
+		serveIndex(w, r)
 	})
 	router.HandleFunc("GET /privacy", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "static/html/privacy.html")
@@ -24,17 +25,24 @@ func Load(router *http.ServeMux, config *config.Config) {
 
 }
 
-func serveIndex(w http.ResponseWriter, r *http.Request, serverAddr string) {
+func serveIndex(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("./static/html/index.html")
 	if err != nil {
 		http.Error(w, "Error loading template", http.StatusInternalServerError)
 		return
 	}
 
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	host := r.Host
+
+	baseURL := fmt.Sprintf("%s://%s", scheme, host)
 	data := struct {
 		APIBaseURL string
 	}{
-		APIBaseURL: serverAddr,
+		APIBaseURL: baseURL,
 	}
 
 	w.Header().Set("Content-Type", "text/html")

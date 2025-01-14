@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/antgobar/famcal/internal/models"
 	"github.com/antgobar/famcal/internal/repository"
 )
 
@@ -12,8 +13,8 @@ type CreateMemberRequest struct {
 }
 
 type MemberResponse struct {
-	CalMember repository.Member `json:"member"`
-	Message   string       `json:"message"`
+	CalMember models.Member `json:"member"`
+	Message   string        `json:"message"`
 }
 
 func getMembers(w http.ResponseWriter, r *http.Request) {

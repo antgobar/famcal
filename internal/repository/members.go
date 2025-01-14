@@ -1,16 +1,13 @@
 package repository
 
-var MembersStore Members = []Member{}
+import "github.com/antgobar/famcal/internal/models"
 
-type Member struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
+type Members []models.Member
 
-type Members []Member
+var MembersStore Members = []models.Member{}
 
-func (m Members) CreateMember(name string) Member {
-	member := Member{Members(MembersStore).nextId(), name}
+func (m Members) CreateMember(name string) models.Member {
+	member := models.Member{ID: Members(MembersStore).nextId(), Name: name}
 	MembersStore = append(MembersStore, member)
 	return member
 }

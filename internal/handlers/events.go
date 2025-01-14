@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/antgobar/famcal/internal/googleprovider"
@@ -16,6 +17,13 @@ type eventsQuery struct {
 }
 
 func getEventsParams(r *http.Request) (*eventsQuery, error) {
+	rawQuery := r.URL.RawQuery
+	decodedQuery, err := url.QueryUnescape(rawQuery)
+	if err != nil {
+		return nil, errors.New("error decoding query parameters")
+	}
+	r.URL.RawQuery = decodedQuery
+
 	calendarID := r.URL.Query().Get("calendarId")
 	if calendarID == "" {
 		return nil, errors.New("missing parameter: calendarID")
