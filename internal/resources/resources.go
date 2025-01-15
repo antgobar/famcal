@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"os"
 
 	"github.com/antgobar/famcal/config"
 )
@@ -33,7 +34,7 @@ func serveIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	scheme := "http"
-	if r.TLS != nil {
+	if env := os.Getenv("ENV"); env == "production" {
 		scheme = "https"
 	}
 	host := r.Host
