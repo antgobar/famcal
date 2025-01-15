@@ -20,7 +20,7 @@ func main() {
 	stack := middleware.LoadMiddleware()
 
 	server := http.Server{
-		Addr:         "localhost:8090",
+		Addr:         "0.0.0.0:8090",
 		Handler:      stack(mux),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
