@@ -32,10 +32,14 @@ func addMember(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Name is required", http.StatusBadRequest)
 		return
 	}
-	member := repository.MembersStore.CreateMember(req.Name)
+	member, err := repository.MembersStore.CreateMember(req.Name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
 
 	response := MemberResponse{
-		CalMember: member,
+		CalMember: *member,
 		Message:   "CalMember created successfully",
 	}
 	w.Header().Set("Content-Type", "application/json")
