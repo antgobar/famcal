@@ -12,8 +12,6 @@ import (
 
 type Config struct {
 	GoogleOauth2Config *oauth2.Config
-	ServerAddress      string
-	Env                string
 }
 
 func MustLoadConfig() *Config {
@@ -29,15 +27,7 @@ func loadConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	serverAddr, err := loadSimpleStringEnvVar("SERVER_ADDR", true)
-	if err != nil {
-		return nil, err
-	}
-	env, err := loadSimpleStringEnvVar("ENV", true)
-	if err != nil {
-		return nil, err
-	}
-	return &Config{GoogleOauth2Config: googleOauth2Config, ServerAddress: *serverAddr, Env: *env}, nil
+	return &Config{GoogleOauth2Config: googleOauth2Config}, nil
 }
 
 func loadGoogleOauth2Config() (*oauth2.Config, error) {

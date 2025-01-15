@@ -20,7 +20,7 @@ func main() {
 	stack := middleware.LoadMiddleware()
 
 	server := http.Server{
-		Addr:         getServerAddr(*cfg),
+		Addr:         "localhost:8090",
 		Handler:      stack(mux),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -36,14 +36,4 @@ func init() {
 	if err != nil {
 		log.Println("Proceeding without .env file")
 	}
-}
-
-func getServerAddr(cfg config.Config) string {
-	if (cfg.Env == "development" || cfg.Env == "") && cfg.ServerAddress == "" {
-		return "localhost:8080"
-	}
-	if cfg.ServerAddress == "" {
-		return "localhost:8080"
-	}
-	return cfg.ServerAddress
 }
