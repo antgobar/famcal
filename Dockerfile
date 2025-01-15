@@ -3,7 +3,6 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod tidy
 COPY . .
-COPY ./static /static
 RUN go build -o bin/app ./cmd
 
 FROM alpine:latest AS final
@@ -19,7 +18,7 @@ RUN adduser \
     appuser
 USER appuser
 
+COPY --from=build /app/static /static
 COPY --from=build /app/bin/app .
-COPY --from=build /static .
 EXPOSE 8090
 ENTRYPOINT [ "./app" ]
