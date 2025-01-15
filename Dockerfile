@@ -19,5 +19,6 @@ RUN adduser \
 USER appuser
 
 COPY --from=build /app/bin/app .
+COPY --from=build /static .
 EXPOSE 8090
 ENTRYPOINT [ "./app" ]
