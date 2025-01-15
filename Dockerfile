@@ -3,6 +3,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod tidy
 COPY . .
+COPY ./static /static
 RUN go build -o bin/app ./cmd
 
 FROM alpine:latest AS final
