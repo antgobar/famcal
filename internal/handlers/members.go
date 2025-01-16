@@ -9,7 +9,8 @@ import (
 )
 
 type CreateMemberRequest struct {
-	Name string `json:"name"`
+	Name   string `json:"name"`
+	Colour int    `json:"colour"`
 }
 
 type MemberResponse struct {
@@ -32,7 +33,7 @@ func addMember(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Name is required", http.StatusBadRequest)
 		return
 	}
-	member, err := repository.MembersStore.CreateMember(req.Name)
+	member, err := repository.MembersStore.CreateMember(req.Name, req.Colour)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return

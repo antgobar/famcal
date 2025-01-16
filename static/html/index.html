@@ -29,12 +29,14 @@
             <ul>
                 <li>
                     <div>
-                        <button onclick="document.getElementById('add-member-dialog').showModal()">Members</button>
+                        <!-- Change button IDs to match JavaScript -->
+                        <button id="openMemberDialogButton">Members</button>
                         <dialog id="add-member-dialog">
                             <article>
                                 <header>
                                     <form method="dialog">
-                                        <button aria-label="Close" rel="prev"></button>
+                                        <!-- Change close button ID to match JavaScript -->
+                                        <button id="closeMemberDialogButton" aria-label="Close" rel="prev"></button>
                                     </form>
                                     <strong>Members</strong>
                                 </header>

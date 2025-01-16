@@ -10,11 +10,11 @@ type Members []models.Member
 
 var MembersStore Members = []models.Member{}
 
-func (m Members) CreateMember(name string) (*models.Member, error) {
+func (m Members) CreateMember(name string, colour int) (*models.Member, error) {
 	if len(MembersStore) > 10 {
 		return nil, errors.New("reached max allowed members")
 	}
-	member := models.Member{ID: Members(MembersStore).nextId(), Name: name}
+	member := models.Member{ID: Members(MembersStore).nextId(), Name: name, Colour: colour}
 	MembersStore = append(MembersStore, member)
 	return &member, nil
 }
