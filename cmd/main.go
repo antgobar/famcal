@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/antgobar/famcal"
 	"github.com/antgobar/famcal/config"
 	"github.com/antgobar/famcal/internal/handlers"
 	"github.com/antgobar/famcal/internal/middleware"
@@ -13,9 +14,10 @@ import (
 )
 
 func main() {
+	assets := famcal.GetFrontendAssets()
 	cfg := config.MustLoadConfig()
 	mux := http.NewServeMux()
-	resources.Load(mux, cfg)
+	resources.Load(mux, cfg, assets)
 	handlers.Register(mux, cfg)
 	stack := middleware.LoadMiddleware()
 

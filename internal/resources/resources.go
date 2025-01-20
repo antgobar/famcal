@@ -3,43 +3,48 @@ package resources
 import (
 	"fmt"
 	"html/template"
+	"io/fs"
+	"log"
 	"net/http"
-	"os"
 
 	"github.com/antgobar/famcal/config"
 )
 
-func Load(router *http.ServeMux, config *config.Config) {
+func Load(router *http.ServeMux, config *config.Config, assets fs.FS) {
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		serveIndex(w, r)
+		serveIndex(w, r, config, assets)
 	})
 	router.HandleFunc("GET /privacy", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "static/html/privacy.html")
+		serveFile(w, assets, "static/html/privacy.html")
 	})
 	router.HandleFunc("GET /terms", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "static/html/terms.html")
+		serveFile(w, assets, "static/html/terms.html")
 	})
 	router.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "static/img/favicon.ico")
+		serveFile(w, assets, "static/img/favicon.ico")
 	})
-	router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
-
+	router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(assets))))
 }
 
-func serveIndex(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("./static/html/index.html")
-	if err != nil {
-		http.Error(w, "Error loading template", http.StatusInternalServerError)
-		return
-	}
-
+func generateBaseUrl(r *http.Request, cfg *config.Config) string {
 	scheme := "http"
-	if env := os.Getenv("ENV"); env == "production" {
+	if env := cfg.Env; env == "production" {
 		scheme = "https"
 	}
 	host := r.Host
 
-	baseURL := fmt.Sprintf("%s://%s", scheme, host)
+	return fmt.Sprintf("%s://%s", scheme, host)
+}
+
+func serveIndex(w http.ResponseWriter, r *http.Request, cfg *config.Config, assets fs.FS) {
+	tmpl, err := template.ParseFS(assets, "html/index.html")
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Error loading template", http.StatusInternalServerError)
+		return
+	}
+
+	baseURL := generateBaseUrl(r, cfg)
 	data := struct {
 		APIBaseURL string
 	}{
@@ -50,4 +55,18 @@ func serveIndex(w http.ResponseWriter, r *http.Request) {
 	if err := tmpl.Execute(w, data); err != nil {
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 	}
+}
+
+func serveFile(w http.ResponseWriter, assets fs.FS, path string) {
+	content, err := fs.ReadFile(assets, path)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "File not found: "+path, http.StatusNotFound)
+		return
+	}
+	if ext := http.DetectContentType(content); ext != "" {
+		w.Header().Set("Content-Type", ext)
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(content)
 }
