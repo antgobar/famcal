@@ -15,13 +15,13 @@ func Load(router *http.ServeMux, config *config.Config, assets fs.FS) {
 		serveIndex(w, r, config, assets)
 	})
 	router.HandleFunc("GET /privacy", func(w http.ResponseWriter, r *http.Request) {
-		serveFile(w, assets, "static/html/privacy.html")
+		serveFile(w, assets, "html/privacy.html")
 	})
 	router.HandleFunc("GET /terms", func(w http.ResponseWriter, r *http.Request) {
-		serveFile(w, assets, "static/html/terms.html")
+		serveFile(w, assets, "html/terms.html")
 	})
 	router.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		serveFile(w, assets, "static/img/favicon.ico")
+		serveFile(w, assets, "img/favicon.ico")
 	})
 	router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(assets))))
 }
