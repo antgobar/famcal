@@ -44,7 +44,7 @@
                                     <label for="name">Member name</label>
                                     <input id="name" type="text" name="name" placeholder="Add a family member" required>
                                 </form>
-                                <div id="memberList"></div>
+
                             </article>
                         </dialog>
                     </div>
@@ -60,14 +60,15 @@
     </header>
 
     <main class="container">
+        <div id="memberList" class="grid"></div>
         <h4 id="calendarDescription"></h4>
         <div id="calendarsList"></div>
         <h2>Events</h2>
         <div id="eventsList"></div>
     </main>
     <script src="/static/js/app.js"></script>
-    <footer>
-        <p>&copy; 2025 FamCal</p>
+    <footer class="container">
+        <p style="text-align: center;">&copy; 2025 FamCal</p>
     </footer>
 </body>
 
