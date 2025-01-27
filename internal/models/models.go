@@ -15,6 +15,7 @@ type CalendarDetails struct {
 }
 
 type Event struct {
+	Id      string `json:"id"`
 	Summary string `json:"summary"`
 	Start   string `json:"start"`
 	End     string `json:"end"`

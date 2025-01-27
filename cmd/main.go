@@ -17,7 +17,7 @@ func main() {
 	assets := famcal.GetFrontendAssets()
 	cfg := config.MustLoadConfig()
 	mux := http.NewServeMux()
-	resources.Load(mux, cfg, assets)
+	resources.Load(mux, assets)
 	handlers.Register(mux, cfg)
 	stack := middleware.LoadMiddleware()
 

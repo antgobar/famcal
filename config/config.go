@@ -15,7 +15,6 @@ type Config struct {
 	GoogleOauth2Config *oauth2.Config
 	Env                string
 	ServerAddr         string
-	Host               string
 }
 
 func MustLoadConfig() *Config {

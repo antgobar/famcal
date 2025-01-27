@@ -20,7 +20,7 @@ const clearElement = (element) => {
 const getCalMembers = async () => {
     const membersContainer = document.getElementById('memberList');
     try {
-        const members = await fetchJSON(`${API_BASE_URL}/members`);
+        const members = await fetchJSON('/members');
         clearElement(membersContainer);
 
         if (members.length === 0) {
@@ -53,7 +53,7 @@ const addCalMemberOnSubmit = () => {
         }
 
         try {
-            await fetchJSON(`${API_BASE_URL}/members`, {
+            await fetchJSON('/members', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: memberName })
@@ -75,7 +75,7 @@ const getCalendars = async () => {
     clearElement(selectElement);
 
     try {
-        const calendars = await fetchJSON(`${API_BASE_URL}/calendars`);
+        const calendars = await fetchJSON('/calendars');
         if (calendars.length === 0) return;
 
         calendars.forEach(({ id, summary, description }, index) => {
@@ -110,7 +110,7 @@ const fetchEvents = async (calendarId) => {
     clearElement(eventsContainer);
 
     try {
-        const events = await fetchJSON(`${API_BASE_URL}/events?calendarId=${calendarId}&nEvents=10`);
+        const events = await fetchJSON(`/events?calendarId=${calendarId}&nEvents=10`);
 
         events.forEach(({ summary, start, end }) => {
             const eventHTML = `
